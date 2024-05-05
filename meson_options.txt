@@ -1,7 +1,7 @@
 # booleans
 option('gpl', type: 'boolean', value: true, description: 'GPL (version 2 or later) build')
 option('cplayer', type: 'boolean', value: true, description: 'mpv CLI player')
-option('libmpv', type: 'boolean', value: false, description: 'libmpv library')
+option('libmpv', type: 'boolean', value: true, description: 'libmpv library')
 option('build-date', type: 'boolean', value: true, description: 'include compile timestamp in binary')
 option('tests', type: 'boolean', value: false, description: 'meson unit tests')
 option('fuzzers', type: 'boolean', value: false, description: 'fuzzer binaries')
@@ -106,11 +106,11 @@ option('videotoolbox-pl', type: 'feature', value: 'auto', description: 'Videotoo
 option('vulkan-interop', type: 'feature', value: 'auto', description: 'Vulkan graphics interop')
 
 # macOS features
-option('macos-cocoa-cb', type: 'feature', value: 'auto', description: 'macOS libmpv backend')
-option('macos-media-player', type: 'feature', value: 'auto', description: 'macOS Media Player support')
-option('macos-touchbar', type: 'feature', value: 'auto', description: 'macOS Touch Bar support')
-option('swift-build', type: 'feature', value: 'auto', description: 'macOS Swift build tools')
-option('swift-flags', type: 'string', description: 'Optional Swift compiler flags')
+option('macos-cocoa-cb', type: 'feature', value: 'disabled', description: 'macOS libmpv backend')
+option('macos-media-player', type: 'feature', value: 'disabled', description: 'macOS Media Player support')
+option('macos-touchbar', type: 'feature', value: 'disabled', description: 'macOS Touch Bar support')
+option('swift-build', type: 'feature', value: 'disabled', description: 'macOS Swift build tools')
+#option('swift-flags', type: 'string', description: 'Optional Swift compiler flags')
 
 # manpages
 option('html-build', type: 'feature', value: 'disabled', description: 'HTML manual generation')
