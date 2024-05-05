@@ -98,7 +98,7 @@ jobs:
       - name: Move artifacts to tools directory
         run: |
           mkdir -p $HOME/MPVBuilds
-          cp -r ./build/output/* $HOME/MPVBuilds/
+          cp -r ./build/* $HOME/MPVBuilds/
 
       - uses: actions/upload-artifact@v4
         with:
