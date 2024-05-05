@@ -1,0 +1,98 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+      - ci
+      - 'release/**'
+    paths-ignore:
+      - 'DOCS/**'
+      - 'TOOLS/lua/**'
+      - '.editorconfig'
+      - '.gitignore'
+      - 'Copyright'
+      - 'README.md'
+      - 'RELEASE_NOTES'
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - 'DOCS/**'
+      - 'TOOLS/lua/**'
+      - '.editorconfig'
+      - '.gitignore'
+      - 'Copyright'
+      - 'README.md'
+      - 'RELEASE_NOTES'
+
+jobs:
+  msys2:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sys:
+          - clang64
+          - mingw64
+          - ucrt64
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Disable autocrlf
+        shell: pwsh
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: git
+          pacboy: >-
+            angleproject:p
+            ca-certificates:p
+            cc:p
+            diffutils:p
+            ffmpeg:p
+            lcms2:p
+            libarchive:p
+            libass:p
+            libcdio-paranoia:p
+            libdvdnav:p
+            libjpeg-turbo:p
+            libplacebo:p
+            lua51:p
+            meson:p
+            ninja:p
+            pkgconf:p
+            python:p
+            rst2pdf:p
+            rubberband:p
+            shaderc:p
+            spirv-cross:p
+            uchardet:p
+            vapoursynth:p
+            vulkan-devel:p
+
+      - name: Build with meson
+        id: build
+        run: |
+          ./ci/build-msys2.sh meson
+
+      - name: Print meson log
+        if: ${{ failure() && steps.build.outcome == 'failure' }}
+        run: |
+          cat ./build/meson-logs/meson-log.txt
+
+      - name: Run meson tests
+        id: tests
+        run: |
+          meson test -C build
+
+      - name: Print meson test log
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        run: |
+          cat ./build/meson-logs/testlog.txt
+
