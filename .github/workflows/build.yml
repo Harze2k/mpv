@@ -94,8 +94,13 @@ jobs:
         if: ${{ failure() && steps.tests.outcome == 'failure' }}
         run: |
           cat ./build/meson-logs/testlog.txt
-        
+
+      - name: Move artifacts to tools directory
+        run: |
+          mkdir -p $HOME/MPVBuilds
+          cp -r ./build/output/* $HOME/MPVBuilds/
+
       - uses: actions/upload-artifact@v4
         with:
           name: mpv-${{ matrix.sys }}
-          path: ~/TOOLS/
+          path: $HOME/MPVBuilds/
