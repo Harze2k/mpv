@@ -1,4 +1,4 @@
-name: build
+name: build_mpv
 on:
   push:
     branches:
@@ -25,7 +25,7 @@ on:
       - 'RELEASE_NOTES'
 
 jobs:
-  msys2:
+  build:
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -36,7 +36,7 @@ jobs:
           - ucrt64
     defaults:
       run:
-        shell: msys2 {0}
+        shell: build {0}
     steps:
       - name: Disable autocrlf
         shell: pwsh
@@ -95,23 +95,34 @@ jobs:
         run: |
           cat ./build/meson-logs/testlog.txt
       
-      - name: 'Tar files'
-        run: tar -cvf my_MPVBuild.tar -C /d/a/mpv/mpv/build/ .
-
-      - name: 'Zip files'
-        run: 7z a -tzip my_MPVBuild.zip ./build/*
-        working-directory: /d/a/mpv/mpv/
-
-
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
-          path: my_MPVBuild.tar
-      
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v4
+          name: Build
+          path: libmpv
+          if-no-files-found: warn
+          overwrite: true
+          
+      - uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
-          path: my_MPVBuild.zip
+          name: Build
+          path: dist
+          if-no-files-found: warn
+          overwrite: true
+
+  release:
+      runs-on: windows-latest
+      permissions:
+        contents: write
+        
+      needs: build
+
+      steps: 
+        - uses: actions/download-artifact@v3
+          with:
+            name: Build
+            path: build
+        - run: zip -r build.zip build/
+        - uses: ncipollo/release-action@v1
+          with:
+            artifacts: "build.zip"
 
