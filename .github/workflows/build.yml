@@ -95,12 +95,32 @@ jobs:
         run: |
           cat ./build/meson-logs/testlog.txt
 
-      - name: Move artifacts to tools directory
+      - name: Move artifacts to MPVBuilds directory
         run: |
-          mkdir -p $HOME/MPVBuilds
-          cp -r ./build/* $HOME/MPVBuilds/
+          mkdir -p $HOME/MPVBuilds  # Make sure this directory is correctly recognized
+          cp -r /d/a/mpv/mpv/build/* $HOME/MPVBuilds/ || true
+          mkdir -p ~/MPVBuilds  # Make sure this directory is correctly recognized
+          cp -r /d/a/mpv/mpv/build/* ~/MPVBuilds/ || true
+        shell: msys2 {0}
+      - name: Debug Info
+        run: |
+          echo "Listing $HOME/MPVBuilds contents:"
+          ls -la $HOME/MPVBuilds || true
+          echo "Listing ~/MPVBuilds contents:"
+          ls -la ~/MPVBuilds || true
+        shell: msys2 {0}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mpv-${{ matrix.sys }}
+          name: mpv-${{ matrix.sys }}-home
           path: $HOME/MPVBuilds/
+          if-no-files-found: warn
+          overwrite: true
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mpv-${{ matrix.sys }}-tilde
+          path: ~/MPVBuilds/
+          if-no-files-found: warn
+          overwrite: true
+
