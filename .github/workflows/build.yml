@@ -1,4 +1,4 @@
-name: build_mpv
+name: build
 on:
   push:
     branches:
@@ -25,7 +25,7 @@ on:
       - 'RELEASE_NOTES'
 
 jobs:
-  build:
+  msys2:
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -36,7 +36,7 @@ jobs:
           - ucrt64
     defaults:
       run:
-        shell: build {0}
+        shell: msys2 {0}
     steps:
       - name: Disable autocrlf
         shell: pwsh
@@ -95,34 +95,41 @@ jobs:
         run: |
           cat ./build/meson-logs/testlog.txt
       
-      - uses: actions/upload-artifact@v3
+      - name: Archive build directory with ZIP
+        run: zip -r mpv-${{ matrix.sys }}.zip /d/a/mpv/mpv/build/ || true
+  
+      - name: Archive build directory with TAR
+        run: tar -cvf mpv-${{ matrix.sys }}.tar /d/a/mpv/mpv/build/ || true
+
+      - name: 'Upload ZIP Artifact'
+        uses: actions/upload-artifact@v4
         with:
-          name: Build
-          path: libmpv
-          if-no-files-found: warn
-          overwrite: true
-          
-      - uses: actions/upload-artifact@v3
+          name: mpv-${{ matrix.sys }}-zip
+          path: mpv-${{ matrix.sys }}.zip
+
+      - name: 'Upload TAR Artifact'
+        uses: actions/upload-artifact@v4
         with:
-          name: Build
-          path: dist
-          if-no-files-found: warn
-          overwrite: true
+          name: mpv-${{ matrix.sys }}-tar
+          path: mpv-${{ matrix.sys }}.tar
 
   release:
       runs-on: windows-latest
       permissions:
         contents: write
-        
-      needs: build
-
+      needs: msys2
       steps: 
         - uses: actions/download-artifact@v3
           with:
-            name: Build
-            path: build
-        - run: zip -r build.zip build/
+            name: mpv-${{ matrix.sys }}.zip
         - uses: ncipollo/release-action@v1
           with:
-            artifacts: "build.zip"
+            artifacts: "${{ github.workspace }}/mpv-${{ matrix.sys }}.zip"
+        
+        - uses: actions/download-artifact@v3
+          with:
+            name: mpv-${{ matrix.sys }}.tar
+        - uses: ncipollo/release-action@v1
+          with:
+            artifacts: "${{ github.workspace }}/mpv-${{ matrix.sys }}.tar"
 
